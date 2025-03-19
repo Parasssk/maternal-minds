@@ -1,10 +1,12 @@
 
 import React, { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Users } from "lucide-react";
+import AshaWorkersList from "./AshaWorkersList";
 
 const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [ashaWorkersOpen, setAshaWorkersOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -38,6 +40,16 @@ const Header: React.FC = () => {
           <a href="#" className="text-foreground/80 hover:text-primary transition-colors">Home</a>
           <a href="#chat" className="text-foreground/80 hover:text-primary transition-colors">Chat Assistant</a>
           <a href="#schemes" className="text-foreground/80 hover:text-primary transition-colors">Health Schemes</a>
+          
+          {/* ASHA Workers Button */}
+          <button 
+            onClick={() => setAshaWorkersOpen(true)}
+            className="flex items-center gap-1.5 text-foreground/80 hover:text-health-600 transition-colors"
+          >
+            <Users size={18} />
+            <span>ASHA Workers</span>
+          </button>
+          
           <button className="btn-primary">Get Started</button>
         </nav>
 
@@ -75,6 +87,19 @@ const Header: React.FC = () => {
             >
               Health Schemes
             </a>
+            
+            {/* ASHA Workers Button (Mobile) */}
+            <button 
+              className="flex items-center gap-1.5 text-foreground/80 hover:text-health-600 transition-colors py-2 text-left"
+              onClick={() => {
+                setAshaWorkersOpen(true);
+                setIsMobileMenuOpen(false);
+              }}
+            >
+              <Users size={18} />
+              <span>ASHA Workers</span>
+            </button>
+            
             <button 
               className="btn-primary w-full"
               onClick={() => setIsMobileMenuOpen(false)}
@@ -84,6 +109,9 @@ const Header: React.FC = () => {
           </nav>
         </div>
       )}
+      
+      {/* ASHA Workers List Modal */}
+      <AshaWorkersList open={ashaWorkersOpen} onOpenChange={setAshaWorkersOpen} />
     </header>
   );
 };
