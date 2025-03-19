@@ -1,12 +1,29 @@
 
 import React, { useState, useEffect } from "react";
-import { Menu, X, Users } from "lucide-react";
+import { Menu, X, Users, Globe } from "lucide-react";
 import AshaWorkersList from "./AshaWorkersList";
+import { useToast } from "@/components/ui/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  language: string;
+  setLanguage: (lang: string) => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ language, setLanguage }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [ashaWorkersOpen, setAshaWorkersOpen] = useState(false);
+  const { toast } = useToast();
+
+  // Get text based on language
+  const getText = (hi: string, en: string) => language === 'hi' ? hi : en;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,6 +38,14 @@ const Header: React.FC = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const handleLanguageChange = (value: string) => {
+    setLanguage(value);
+    toast({
+      title: value === 'hi' ? "भाषा बदल दी गई है" : "Language changed",
+      description: value === 'hi' ? "हिंदी भाषा चुनी गई है" : "English language selected",
+    });
+  };
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -32,14 +57,22 @@ const Header: React.FC = () => {
           <span className="text-xl md:text-2xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-health-700 to-health-500">
             RMNCHA
           </span>
-          <span className="ml-2 text-xs md:text-sm chip-health">Health Assistant</span>
+          <span className="ml-2 text-xs md:text-sm chip-health">
+            {getText("स्वास्थ्य सहायक", "Health Assistant")}
+          </span>
         </div>
 
         {/* Desktop Menu */}
         <nav className="hidden md:flex items-center space-x-8">
-          <a href="#" className="text-foreground/80 hover:text-primary transition-colors">Home</a>
-          <a href="#chat" className="text-foreground/80 hover:text-primary transition-colors">Chat Assistant</a>
-          <a href="#schemes" className="text-foreground/80 hover:text-primary transition-colors">Health Schemes</a>
+          <a href="#" className="text-foreground/80 hover:text-primary transition-colors">
+            {getText("होम", "Home")}
+          </a>
+          <a href="#chat" className="text-foreground/80 hover:text-primary transition-colors">
+            {getText("चैट सहायक", "Chat Assistant")}
+          </a>
+          <a href="#schemes" className="text-foreground/80 hover:text-primary transition-colors">
+            {getText("स्वास्थ्य योजनाएँ", "Health Schemes")}
+          </a>
           
           {/* ASHA Workers Button */}
           <button 
@@ -47,10 +80,26 @@ const Header: React.FC = () => {
             className="flex items-center gap-1.5 text-foreground/80 hover:text-health-600 transition-colors"
           >
             <Users size={18} />
-            <span>ASHA Workers</span>
+            <span>{getText("आशा कार्यकर्ता", "ASHA Workers")}</span>
           </button>
           
-          <button className="btn-primary">Get Started</button>
+          {/* Language Select */}
+          <div className="flex items-center gap-1.5">
+            <Globe size={18} className="text-foreground/70" />
+            <Select value={language} onValueChange={handleLanguageChange}>
+              <SelectTrigger className="h-8 w-24 text-sm">
+                <SelectValue placeholder="Language" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="hi">हिंदी</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <button className="btn-primary">
+            {getText("शुरू करें", "Get Started")}
+          </button>
         </nav>
 
         {/* Mobile Menu Button */}
@@ -71,21 +120,21 @@ const Header: React.FC = () => {
               className="text-foreground/80 hover:text-primary transition-colors py-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Home
+              {getText("होम", "Home")}
             </a>
             <a 
               href="#chat" 
               className="text-foreground/80 hover:text-primary transition-colors py-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Chat Assistant
+              {getText("चैट सहायक", "Chat Assistant")}
             </a>
             <a 
               href="#schemes" 
               className="text-foreground/80 hover:text-primary transition-colors py-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Health Schemes
+              {getText("स्वास्थ्य योजनाएँ", "Health Schemes")}
             </a>
             
             {/* ASHA Workers Button (Mobile) */}
@@ -97,21 +146,35 @@ const Header: React.FC = () => {
               }}
             >
               <Users size={18} />
-              <span>ASHA Workers</span>
+              <span>{getText("आशा कार्यकर्ता", "ASHA Workers")}</span>
             </button>
+            
+            {/* Language Select (Mobile) */}
+            <div className="flex items-center gap-1.5 py-2">
+              <Globe size={18} className="text-foreground/70" />
+              <Select value={language} onValueChange={handleLanguageChange}>
+                <SelectTrigger className="h-8 w-24 text-sm">
+                  <SelectValue placeholder="Language" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="hi">हिंदी</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             
             <button 
               className="btn-primary w-full"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Get Started
+              {getText("शुरू करें", "Get Started")}
             </button>
           </nav>
         </div>
       )}
       
       {/* ASHA Workers List Modal */}
-      <AshaWorkersList open={ashaWorkersOpen} onOpenChange={setAshaWorkersOpen} />
+      <AshaWorkersList open={ashaWorkersOpen} onOpenChange={setAshaWorkersOpen} language={language} />
     </header>
   );
 };

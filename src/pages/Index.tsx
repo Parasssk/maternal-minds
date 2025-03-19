@@ -1,18 +1,20 @@
 
-import React, { useEffect } from "react";
-import Header from "@/components/Header";
-import Hero from "@/components/Hero";
-import ChatInterface from "@/components/ChatInterface";
-import HealthSchemes from "@/components/HealthSchemes";
-import RegisterForm from "@/components/RegisterForm";
-import Footer from "@/components/Footer";
+import React, { useState, useEffect } from 'react';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import Hero from '@/components/Hero';
+import ChatInterface from '@/components/ChatInterface';
+import HealthSchemes from '@/components/HealthSchemes';
+import RegisterForm from '@/components/RegisterForm';
 
 const Index: React.FC = () => {
-  // Handle URL hash for scrolling to sections
+  const [language, setLanguage] = useState<string>('en');
+  
+  // Effect to scroll to the section based on URL hash
   useEffect(() => {
-    const hash = window.location.hash;
-    if (hash) {
-      const element = document.querySelector(hash);
+    // This handles initial load and browser back/forward
+    if (window.location.hash) {
+      const element = document.querySelector(window.location.hash);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' });
       }
@@ -20,14 +22,15 @@ const Index: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen">
-      <Header />
-      <Hero />
-      <div className="container mx-auto text-center py-8">
-        <RegisterForm />
-      </div>
-      <ChatInterface />
-      <HealthSchemes />
+    <div className="min-h-screen bg-background">
+      <Header language={language} setLanguage={setLanguage} />
+      
+      <main>
+        <Hero registerForm={<RegisterForm language={language} />} />
+        <ChatInterface language={language} />
+        <HealthSchemes />
+      </main>
+      
       <Footer />
     </div>
   );

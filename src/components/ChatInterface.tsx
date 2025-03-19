@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Send, Mic, Volume2, Plus, StopCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { generateId, getCurrentTimestamp, initialMessages, getAIResponse, Message } from "@/utils/chatUtils";
+import { generateId, getCurrentTimestamp, getInitialMessage, getAIResponse, Message } from "@/utils/chatUtils";
 import { startSpeechRecognition, speakText, stopSpeaking } from "@/utils/speechUtils";
 import AnimatedBlob from "./AnimatedBlob";
 import { Button } from "@/components/ui/button";
@@ -21,17 +21,28 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-const ChatInterface: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+interface ChatInterfaceProps {
+  language: string;
+}
+
+const ChatInterface: React.FC<ChatInterfaceProps> = ({ language }) => {
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState("en-US");
   const stopListeningRef = useRef<(() => void) | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  // Get text based on language
+  const getText = (hi: string, en: string) => language === 'hi' ? hi : en;
+
+  // Initialize messages when language changes
+  useEffect(() => {
+    setMessages([getInitialMessage(language)]);
+  }, [language]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -66,7 +77,7 @@ const ChatInterface: React.FC = () => {
     setIsProcessing(true);
 
     try {
-      const response = await getAIResponse(inputMessage);
+      const response = await getAIResponse(inputMessage, language);
       
       const assistantMessage: Message = {
         id: generateId(),
@@ -79,14 +90,17 @@ const ChatInterface: React.FC = () => {
       
       // If text-to-speech is active, speak the response
       if (isSpeaking) {
-        speakText(response);
+        speakText(response, language);
       }
     } catch (error) {
       console.error("Error getting AI response:", error);
       
       const errorMessage: Message = {
         id: generateId(),
-        content: "I'm sorry, I couldn't process your request. Please try again.",
+        content: getText(
+          "मुझे क्षमा करें, मैं आपके अनुरोध को संसाधित नहीं कर सका। कृपया पुनः प्रयास करें।",
+          "I'm sorry, I couldn't process your request. Please try again."
+        ),
         role: "assistant",
         timestamp: getCurrentTimestamp(),
       };
@@ -95,8 +109,11 @@ const ChatInterface: React.FC = () => {
       
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to get AI response. Please try again.",
+        title: getText("त्रुटि", "Error"),
+        description: getText(
+          "AI प्रतिक्रिया प्राप्त करने में विफल। कृपया पुनः प्रयास करें।",
+          "Failed to get AI response. Please try again."
+        ),
       });
     } finally {
       setIsProcessing(false);
@@ -127,8 +144,11 @@ const ChatInterface: React.FC = () => {
       setIsListening(true);
       
       toast({
-        title: "Listening...",
-        description: "Speak now. I'm listening to you.",
+        title: getText("सुन रहा हूँ...", "Listening..."),
+        description: getText(
+          "अब बोलिए। मैं आपकी बात सुन रहा हूँ।",
+          "Speak now. I'm listening to you."
+        ),
       });
       
       stopListeningRef.current = startSpeechRecognition(
@@ -137,7 +157,8 @@ const ChatInterface: React.FC = () => {
         },
         () => {
           setIsListening(false);
-        }
+        },
+        language
       );
     }
   };
@@ -147,34 +168,43 @@ const ChatInterface: React.FC = () => {
       stopSpeaking();
       setIsSpeaking(false);
       toast({
-        title: "Text-to-speech disabled",
+        title: getText("टेक्स्ट-टू-स्पीच अक्षम", "Text-to-speech disabled"),
       });
     } else {
       setIsSpeaking(true);
       toast({
-        title: "Text-to-speech enabled",
-        description: "AI responses will be spoken aloud.",
+        title: getText("टेक्स्ट-टू-स्पीच सक्षम", "Text-to-speech enabled"),
+        description: getText(
+          "AI प्रतिक्रियाएँ ज़ोर से बोली जाएंगी।",
+          "AI responses will be spoken aloud."
+        ),
       });
       
       // Speak the last AI message if there is one
       const lastAiMessage = [...messages].reverse().find(m => m.role === 'assistant');
       if (lastAiMessage) {
-        speakText(lastAiMessage.content);
+        speakText(lastAiMessage.content, language);
       }
     }
   };
 
   const handleFindHospital = () => {
     toast({
-      title: "Find Hospital",
-      description: "Connecting to nearby healthcare facilities...",
+      title: getText("अस्पताल खोजें", "Find Hospital"),
+      description: getText(
+        "आस-पास के स्वास्थ्य केंद्रों से जुड़ रहा हूँ...",
+        "Connecting to nearby healthcare facilities..."
+      ),
     });
     
     // In a real app, this would use geolocation and connect to a hospital API
     setTimeout(() => {
       const newMessage: Message = {
         id: generateId(),
-        content: "I've located several healthcare facilities near you. The closest is Mother & Child Hospital (2.5km away), which offers maternal and pediatric services. Would you like me to show directions or provide their contact information?",
+        content: getText(
+          "मैंने आपके पास कई स्वास्थ्य सुविधाएँ ढूंढ ली हैं। सबसे नज़दीकी मदर एंड चाइल्ड हॉस्पिटल (2.5 किमी दूर) है, जो मातृ और बाल सेवाएँ प्रदान करता है। क्या आप दिशा-निर्देश देखना चाहते हैं या उनकी संपर्क जानकारी प्राप्त करना चाहते हैं?",
+          "I've located several healthcare facilities near you. The closest is Mother & Child Hospital (2.5km away), which offers maternal and pediatric services. Would you like me to show directions or provide their contact information?"
+        ),
         role: "assistant",
         timestamp: getCurrentTimestamp(),
       };
@@ -182,22 +212,28 @@ const ChatInterface: React.FC = () => {
       setMessages(prev => [...prev, newMessage]);
       
       if (isSpeaking) {
-        speakText(newMessage.content);
+        speakText(newMessage.content, language);
       }
     }, 2000);
   };
 
   const handleSetReminder = () => {
     toast({
-      title: "Health Reminders",
-      description: "Setting up your health reminder...",
+      title: getText("स्वास्थ्य अनुस्मारक", "Health Reminders"),
+      description: getText(
+        "आपका स्वास्थ्य अनुस्मारक सेट कर रहा हूँ...",
+        "Setting up your health reminder..."
+      ),
     });
     
     // In a real app, this would save to a database or local storage
     setTimeout(() => {
       const newMessage: Message = {
         id: generateId(),
-        content: "I can help you set up health reminders. What type of reminder would you like? Options include: vaccination schedules, prenatal check-ups, medication reminders, or dietary recommendations.",
+        content: getText(
+          "मैं आपको स्वास्थ्य अनुस्मारक सेट करने में मदद कर सकता हूँ। आप किस प्रकार का अनुस्मारक चाहते हैं? विकल्प शामिल हैं: टीकाकरण कार्यक्रम, प्रसव पूर्व जांच, दवा अनुस्मारक, या आहार संबंधी सिफारिशें।",
+          "I can help you set up health reminders. What type of reminder would you like? Options include: vaccination schedules, prenatal check-ups, medication reminders, or dietary recommendations."
+        ),
         role: "assistant",
         timestamp: getCurrentTimestamp(),
       };
@@ -205,7 +241,7 @@ const ChatInterface: React.FC = () => {
       setMessages(prev => [...prev, newMessage]);
       
       if (isSpeaking) {
-        speakText(newMessage.content);
+        speakText(newMessage.content, language);
       }
     }, 1000);
   };
@@ -214,11 +250,13 @@ const ChatInterface: React.FC = () => {
     <section id="chat" className="relative py-20 px-4">
       <div className="container mx-auto max-w-5xl">
         <div className="text-center mb-10">
-          <span className="chip-health mb-2">Intelligent Assistance</span>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">AI Health Assistant</h2>
+          <span className="chip-health mb-2">{getText("बुद्धिमान सहायता", "Intelligent Assistance")}</span>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">{getText("AI स्वास्थ्य सहायक", "AI Health Assistant")}</h2>
           <p className="text-foreground/70 max-w-2xl mx-auto">
-            Ask questions about maternal, newborn, child, and adolescent health.
-            Get personalized advice and government scheme recommendations.
+            {getText(
+              "मातृ, नवजात, बच्चा और किशोर स्वास्थ्य के बारे में प्रश्न पूछें। व्यक्तिगत सलाह और सरकारी योजना सिफारिशें प्राप्त करें।",
+              "Ask questions about maternal, newborn, child, and adolescent health. Get personalized advice and government scheme recommendations."
+            )}
           </p>
         </div>
 
@@ -242,27 +280,12 @@ const ChatInterface: React.FC = () => {
                   <span className="text-sm font-semibold">HA</span>
                 </div>
                 <div className="ml-3">
-                  <h3 className="font-medium">Health Assistant</h3>
-                  <p className="text-xs text-foreground/60">RMNCHA Support</p>
+                  <h3 className="font-medium">{getText("स्वास्थ्य सहायक", "Health Assistant")}</h3>
+                  <p className="text-xs text-foreground/60">RMNCHA {getText("सहायता", "Support")}</p>
                 </div>
                 <div className="ml-auto flex items-center gap-2">
-                  <Select 
-                    value={selectedLanguage}
-                    onValueChange={setSelectedLanguage}
-                  >
-                    <SelectTrigger className="w-[130px] h-8 text-xs">
-                      <SelectValue placeholder="Language" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="en-US">English</SelectItem>
-                      <SelectItem value="hi-IN">Hindi</SelectItem>
-                      <SelectItem value="ta-IN">Tamil</SelectItem>
-                      <SelectItem value="te-IN">Telugu</SelectItem>
-                      <SelectItem value="bn-IN">Bengali</SelectItem>
-                    </SelectContent>
-                  </Select>
                   <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse-soft ml-1"></span>
-                  <span className="text-xs text-foreground/60">Online</span>
+                  <span className="text-xs text-foreground/60">{getText("ऑनलाइन", "Online")}</span>
                 </div>
               </div>
             </div>
@@ -317,8 +340,11 @@ const ChatInterface: React.FC = () => {
                         className="p-2 rounded-full hover:bg-secondary transition-colors"
                         onClick={() => {
                           toast({
-                            title: "Additional Options",
-                            description: "You can attach images or files related to your health concerns.",
+                            title: getText("अतिरिक्त विकल्प", "Additional Options"),
+                            description: getText(
+                              "आप अपनी स्वास्थ्य चिंताओं से संबंधित छवियों या फाइलों को संलग्न कर सकते हैं।",
+                              "You can attach images or files related to your health concerns."
+                            ),
                           });
                         }}
                       >
@@ -326,7 +352,7 @@ const ChatInterface: React.FC = () => {
                       </button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Add attachments</p>
+                      <p>{getText("संलग्नक जोड़ें", "Add attachments")}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -338,7 +364,7 @@ const ChatInterface: React.FC = () => {
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyDown={handleKeyPress}
-                    placeholder="Type your health question..."
+                    placeholder={getText("अपना स्वास्थ्य प्रश्न लिखें...", "Type your health question...")}
                     className="w-full px-4 py-2.5 bg-secondary/50 rounded-full focus:outline-none focus:ring-2 focus:ring-primary/30"
                     disabled={isProcessing}
                   />
@@ -352,13 +378,13 @@ const ChatInterface: React.FC = () => {
                           isListening ? "bg-red-500 text-white hover:bg-red-600" : "hover:bg-secondary"
                         }`}
                         onClick={toggleSpeechRecognition}
-                        title="Voice input"
+                        title={getText("वॉयस इनपुट", "Voice input")}
                       >
                         {isListening ? <StopCircle size={20} /> : <Mic size={20} className="text-foreground/70" />}
                       </button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{isListening ? "Stop listening" : "Start voice input"}</p>
+                      <p>{isListening ? getText("सुनना बंद करें", "Stop listening") : getText("वॉयस इनपुट शुरू करें", "Start voice input")}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -371,13 +397,13 @@ const ChatInterface: React.FC = () => {
                           isSpeaking ? "bg-primary text-white hover:bg-primary/90" : "hover:bg-secondary"
                         }`}
                         onClick={toggleTextToSpeech}
-                        title="Text to speech"
+                        title={getText("टेक्स्ट टू स्पीच", "Text to speech")}
                       >
                         <Volume2 size={20} className={isSpeaking ? "text-white" : "text-foreground/70"} />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{isSpeaking ? "Disable text-to-speech" : "Enable text-to-speech"}</p>
+                      <p>{isSpeaking ? getText("टेक्स्ट-टू-स्पीच अक्षम करें", "Disable text-to-speech") : getText("टेक्स्ट-टू-स्पीच सक्षम करें", "Enable text-to-speech")}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -406,8 +432,8 @@ const ChatInterface: React.FC = () => {
               <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-health-100 flex items-center justify-center">
                 <Volume2 size={18} className="text-health-700" />
               </div>
-              <h3 className="font-medium mb-1">Voice Support</h3>
-              <p className="text-sm text-foreground/70">Speak in your regional language</p>
+              <h3 className="font-medium mb-1">{getText("वॉयस सहायता", "Voice Support")}</h3>
+              <p className="text-sm text-foreground/70">{getText("अपनी क्षेत्रीय भाषा में बोलें", "Speak in your regional language")}</p>
             </button>
             
             <button 
@@ -422,8 +448,8 @@ const ChatInterface: React.FC = () => {
                   <path d="M19 18v2"></path>
                 </svg>
               </div>
-              <h3 className="font-medium mb-1">Hospital Connect</h3>
-              <p className="text-sm text-foreground/70">Find nearby healthcare facilities</p>
+              <h3 className="font-medium mb-1">{getText("अस्पताल कनेक्ट", "Hospital Connect")}</h3>
+              <p className="text-sm text-foreground/70">{getText("आस-पास के स्वास्थ्य केंद्र खोजें", "Find nearby healthcare facilities")}</p>
             </button>
             
             <button 
@@ -437,8 +463,8 @@ const ChatInterface: React.FC = () => {
                   <path d="M9 21V9"></path>
                 </svg>
               </div>
-              <h3 className="font-medium mb-1">Health Reminders</h3>
-              <p className="text-sm text-foreground/70">Diet and vaccination alerts</p>
+              <h3 className="font-medium mb-1">{getText("स्वास्थ्य अनुस्मारक", "Health Reminders")}</h3>
+              <p className="text-sm text-foreground/70">{getText("आहार और टीकाकरण अलर्ट", "Diet and vaccination alerts")}</p>
             </button>
           </div>
         </div>

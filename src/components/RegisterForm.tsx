@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
-import { CalendarIcon, X } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
 import {
@@ -61,9 +61,16 @@ const formSchema = z.object({
   preferredLanguage: z.string()
 });
 
-const RegisterForm: React.FC = () => {
+interface RegisterFormProps {
+  language: string;
+}
+
+const RegisterForm: React.FC<RegisterFormProps> = ({ language }) => {
   const { toast } = useToast();
   const [open, setOpen] = React.useState(false);
+  
+  // Get text based on language
+  const getText = (hi: string, en: string) => language === 'hi' ? hi : en;
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -76,7 +83,7 @@ const RegisterForm: React.FC = () => {
       district: "",
       state: "",
       additionalInfo: "",
-      preferredLanguage: "English"
+      preferredLanguage: language === 'hi' ? "Hindi" : "English"
     },
   });
 
@@ -85,8 +92,11 @@ const RegisterForm: React.FC = () => {
     
     // In a real application, this data would be sent to a backend service
     toast({
-      title: "Registration Successful",
-      description: "An ASHA worker will contact you soon. Take care of yourself!",
+      title: getText("पंजीकरण सफल", "Registration Successful"),
+      description: getText(
+        "एक आशा कार्यकर्ता जल्द ही आपसे संपर्क करेगी। अपना ख्याल रखें!",
+        "An ASHA worker will contact you soon. Take care of yourself!"
+      ),
     });
     
     // Close the dialog
@@ -103,14 +113,19 @@ const RegisterForm: React.FC = () => {
           className="btn-health"
           size="lg"
         >
-          Register Pregnancy
+          {getText("गर्भावस्था पंजीकरण", "Register Pregnancy")}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Register Your Pregnancy</DialogTitle>
+          <DialogTitle className="text-2xl">
+            {getText("अपनी गर्भावस्था पंजीकृत करें", "Register Your Pregnancy")}
+          </DialogTitle>
           <DialogDescription>
-            Fill in your details so ASHA workers can provide you with proper care during your pregnancy journey.
+            {getText(
+              "आशा कार्यकर्ता आपकी गर्भावस्था यात्रा के दौरान उचित देखभाल प्रदान कर सकें, इसलिए अपना विवरण भरें।",
+              "Fill in your details so ASHA workers can provide you with proper care during your pregnancy journey."
+            )}
           </DialogDescription>
         </DialogHeader>
         
@@ -122,9 +137,9 @@ const RegisterForm: React.FC = () => {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Name</FormLabel>
+                    <FormLabel>{getText("पूरा नाम", "Full Name")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your full name" {...field} />
+                      <Input placeholder={getText("अपना पूरा नाम दर्ज करें", "Enter your full name")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -136,9 +151,9 @@ const RegisterForm: React.FC = () => {
                 name="age"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Age</FormLabel>
+                    <FormLabel>{getText("उम्र", "Age")}</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="Your age" {...field} />
+                      <Input type="number" placeholder={getText("आपकी उम्र", "Your age")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -152,12 +167,15 @@ const RegisterForm: React.FC = () => {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
+                    <FormLabel>{getText("फोन नंबर", "Phone Number")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Your contact number" {...field} />
+                      <Input placeholder={getText("आपका संपर्क नंबर", "Your contact number")} {...field} />
                     </FormControl>
                     <FormDescription>
-                      ASHA workers will use this to contact you
+                      {getText(
+                        "आशा कार्यकर्ता आपसे संपर्क करने के लिए इसका उपयोग करेंगी",
+                        "ASHA workers will use this to contact you"
+                      )}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -169,9 +187,9 @@ const RegisterForm: React.FC = () => {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email (Optional)</FormLabel>
+                    <FormLabel>{getText("ईमेल (वैकल्पिक)", "Email (Optional)")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Your email address" {...field} />
+                      <Input placeholder={getText("आपका ईमेल पता", "Your email address")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -184,7 +202,7 @@ const RegisterForm: React.FC = () => {
               name="conceiveDate"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Approximate Conception Date</FormLabel>
+                  <FormLabel>{getText("अनुमानित गर्भधारण तिथि", "Approximate Conception Date")}</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -198,7 +216,7 @@ const RegisterForm: React.FC = () => {
                           {field.value ? (
                             format(field.value, "PPP")
                           ) : (
-                            <span>Select date</span>
+                            <span>{getText("तिथि चुनें", "Select date")}</span>
                           )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
@@ -218,7 +236,10 @@ const RegisterForm: React.FC = () => {
                     </PopoverContent>
                   </Popover>
                   <FormDescription>
-                    This helps calculate your expected delivery date
+                    {getText(
+                      "यह आपकी अपेक्षित प्रसव तिथि की गणना करने में मदद करता है",
+                      "This helps calculate your expected delivery date"
+                    )}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -230,10 +251,10 @@ const RegisterForm: React.FC = () => {
               name="address"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Address</FormLabel>
+                  <FormLabel>{getText("पता", "Address")}</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Your residential address" 
+                      placeholder={getText("आपका आवासीय पता", "Your residential address")} 
                       className="resize-none" 
                       {...field} 
                     />
@@ -249,9 +270,9 @@ const RegisterForm: React.FC = () => {
                 name="district"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>District</FormLabel>
+                    <FormLabel>{getText("जिला", "District")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Your district" {...field} />
+                      <Input placeholder={getText("आपका जिला", "Your district")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -263,9 +284,9 @@ const RegisterForm: React.FC = () => {
                 name="state"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>State</FormLabel>
+                    <FormLabel>{getText("राज्य", "State")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Your state" {...field} />
+                      <Input placeholder={getText("आपका राज्य", "Your state")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -278,27 +299,30 @@ const RegisterForm: React.FC = () => {
               name="preferredLanguage"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Preferred Language</FormLabel>
+                  <FormLabel>{getText("पसंदीदा भाषा", "Preferred Language")}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select your preferred language" />
+                        <SelectValue placeholder={getText("अपनी पसंदीदा भाषा चुनें", "Select your preferred language")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="English">English</SelectItem>
-                      <SelectItem value="Hindi">Hindi</SelectItem>
-                      <SelectItem value="Tamil">Tamil</SelectItem>
-                      <SelectItem value="Telugu">Telugu</SelectItem>
-                      <SelectItem value="Bengali">Bengali</SelectItem>
-                      <SelectItem value="Marathi">Marathi</SelectItem>
-                      <SelectItem value="Gujarati">Gujarati</SelectItem>
-                      <SelectItem value="Kannada">Kannada</SelectItem>
-                      <SelectItem value="Malayalam">Malayalam</SelectItem>
+                      <SelectItem value="Hindi">हिंदी</SelectItem>
+                      <SelectItem value="Tamil">தமிழ்</SelectItem>
+                      <SelectItem value="Telugu">తెలుగు</SelectItem>
+                      <SelectItem value="Bengali">বাংলা</SelectItem>
+                      <SelectItem value="Marathi">मराठी</SelectItem>
+                      <SelectItem value="Gujarati">ગુજરાતી</SelectItem>
+                      <SelectItem value="Kannada">ಕನ್ನಡ</SelectItem>
+                      <SelectItem value="Malayalam">മലയാളം</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormDescription>
-                    ASHA workers will try to communicate in your preferred language
+                    {getText(
+                      "आशा कार्यकर्ता आपकी पसंदीदा भाषा में संवाद करने का प्रयास करेंगी",
+                      "ASHA workers will try to communicate in your preferred language"
+                    )}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -310,10 +334,13 @@ const RegisterForm: React.FC = () => {
               name="additionalInfo"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Additional Information (Optional)</FormLabel>
+                  <FormLabel>{getText("अतिरिक्त जानकारी (वैकल्पिक)", "Additional Information (Optional)")}</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Any health conditions, concerns, or information you'd like to share" 
+                      placeholder={getText(
+                        "कोई स्वास्थ्य स्थिति, चिंताएं, या जानकारी जिसे आप साझा करना चाहते हैं",
+                        "Any health conditions, concerns, or information you'd like to share"
+                      )} 
                       className="resize-none" 
                       {...field} 
                     />
@@ -325,9 +352,9 @@ const RegisterForm: React.FC = () => {
             
             <div className="flex justify-end gap-3">
               <DialogClose asChild>
-                <Button type="button" variant="outline">Cancel</Button>
+                <Button type="button" variant="outline">{getText("रद्द करें", "Cancel")}</Button>
               </DialogClose>
-              <Button type="submit">Register</Button>
+              <Button type="submit">{getText("पंजीकरण करें", "Register")}</Button>
             </div>
           </form>
         </Form>

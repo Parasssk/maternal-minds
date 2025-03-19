@@ -2,7 +2,8 @@
 // Basic speech recognition utility
 export const startSpeechRecognition = (
   onResult: (text: string) => void, 
-  onEnd: () => void
+  onEnd: () => void,
+  lang: string = 'en-US'
 ): (() => void) => {
   if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
     console.error('Speech recognition not supported in this browser');
@@ -10,11 +11,17 @@ export const startSpeechRecognition = (
     return () => {};
   }
 
+  // Map application language to browser speech API language
+  const langMap: Record<string, string> = {
+    'en': 'en-US',
+    'hi': 'hi-IN',
+  };
+
   // @ts-ignore - Using browser API that TypeScript might not know
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const recognition = new SpeechRecognition();
   
-  recognition.lang = 'en-US'; // Default to English, can be changed for other languages
+  recognition.lang = langMap[lang] || 'en-US'; // Set language based on input
   recognition.continuous = false;
   recognition.interimResults = true;
   
@@ -45,7 +52,7 @@ export const startSpeechRecognition = (
 };
 
 // Text-to-speech utility
-export const speakText = (text: string) => {
+export const speakText = (text: string, lang: string = 'en') => {
   if (!('speechSynthesis' in window)) {
     console.error('Text-to-speech not supported in this browser');
     return;
@@ -55,7 +62,14 @@ export const speakText = (text: string) => {
   window.speechSynthesis.cancel();
   
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'en-US'; // Default to English
+  
+  // Map application language to browser speech API language
+  const langMap: Record<string, string> = {
+    'en': 'en-US',
+    'hi': 'hi-IN',
+  };
+  
+  utterance.lang = langMap[lang] || 'en-US';
   utterance.rate = 1.0;
   utterance.pitch = 1.0;
   
