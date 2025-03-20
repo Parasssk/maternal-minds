@@ -5,7 +5,6 @@ import Footer from '@/components/Footer';
 import Hero from '@/components/Hero';
 import ChatInterface from '@/components/ChatInterface';
 import HealthSchemes from '@/components/HealthSchemes';
-import RegisterForm from '@/components/RegisterForm';
 
 const Index: React.FC = () => {
   const [language, setLanguage] = useState<string>('en');
@@ -27,7 +26,6 @@ const Index: React.FC = () => {
       
       <main>
         <Hero />
-        <RegisterForm language={language} />
         <ChatInterface language={language} />
         <HealthSchemes />
       </main>
@@ -38,3 +36,4 @@ const Index: React.FC = () => {
 };
 
 export default Index;
+
