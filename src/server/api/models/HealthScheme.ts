@@ -9,6 +9,6 @@ export interface HealthScheme {
   eligibilityHi: string;
   benefits: string;
   benefitsHi: string;
-  category: 'maternal' | 'child' | 'adolescent' | 'reproductive';
+  category: string;
   website: string;
 }
