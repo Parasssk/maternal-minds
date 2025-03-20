@@ -26,7 +26,8 @@ const Index: React.FC = () => {
       <Header language={language} setLanguage={setLanguage} />
       
       <main>
-        <Hero registerForm={<RegisterForm language={language} />} />
+        <Hero />
+        <RegisterForm language={language} />
         <ChatInterface language={language} />
         <HealthSchemes />
       </main>

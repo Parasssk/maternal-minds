@@ -2,11 +2,8 @@
 import React from "react";
 import { ArrowDown } from "lucide-react";
 import AnimatedBlob from "./AnimatedBlob";
-import { useNavigate } from "react-router-dom";
 
 const Hero: React.FC = () => {
-  const navigate = useNavigate();
-
   const scrollToChat = () => {
     const chatSection = document.getElementById("chat");
     chatSection?.scrollIntoView({ behavior: "smooth" });
@@ -15,6 +12,11 @@ const Hero: React.FC = () => {
   const scrollToSchemes = () => {
     const schemesSection = document.getElementById("schemes");
     schemesSection?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const scrollToRegister = () => {
+    const registerSection = document.getElementById("register");
+    registerSection?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -55,6 +57,12 @@ const Hero: React.FC = () => {
           </button>
           <button 
             className="btn-secondary"
+            onClick={scrollToRegister}
+          >
+            Register Pregnancy
+          </button>
+          <button 
+            className="btn-outline"
             onClick={scrollToSchemes}
           >
             Learn More
