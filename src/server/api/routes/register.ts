@@ -28,7 +28,7 @@ router.post('/', validateRegistration, async (req: Request, res: Response) => {
     }
 
     const registration = await saveRegistration(req.body);
-    res.status(201).json({ 
+    return res.status(201).json({ 
       success: true, 
       message: req.body.preferredLanguage === 'Hindi' ? 
         'पंजीकरण सफलतापूर्वक पूरा हुआ' : 
@@ -37,7 +37,7 @@ router.post('/', validateRegistration, async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Error registering pregnancy:', error);
-    res.status(500).json({ 
+    return res.status(500).json({ 
       success: false, 
       message: req.body.preferredLanguage === 'Hindi' ? 
         'पंजीकरण के दौरान एक त्रुटि हुई' : 
@@ -50,10 +50,10 @@ router.post('/', validateRegistration, async (req: Request, res: Response) => {
 router.get('/', async (_req: Request, res: Response) => {
   try {
     const registrations = await getAllRegistrations();
-    res.status(200).json({ success: true, data: registrations });
+    return res.status(200).json({ success: true, data: registrations });
   } catch (error) {
     console.error('Error fetching registrations:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch registrations' });
+    return res.status(500).json({ success: false, message: 'Failed to fetch registrations' });
   }
 });
 
@@ -64,10 +64,10 @@ router.get('/:id', async (req: Request, res: Response) => {
     if (!registration) {
       return res.status(404).json({ success: false, message: 'Registration not found' });
     }
-    res.status(200).json({ success: true, data: registration });
+    return res.status(200).json({ success: true, data: registration });
   } catch (error) {
     console.error('Error fetching registration:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch registration' });
+    return res.status(500).json({ success: false, message: 'Failed to fetch registration' });
   }
 });
 

@@ -1,25 +1,11 @@
-
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Mic, Volume2, Plus, StopCircle } from "lucide-react";
+import { Send, Mic, Volume2, Plus, StopCircle, Share2, Download } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { generateId, getCurrentTimestamp, getInitialMessage, getAIResponse, Message } from "@/utils/chatUtils";
 import { startSpeechRecognition, speakText, stopSpeaking } from "@/utils/speechUtils";
 import AnimatedBlob from "./AnimatedBlob";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 
 interface ChatInterfaceProps {
   language: string;
@@ -36,10 +22,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ language }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // Get text based on language
   const getText = (hi: string, en: string) => language === 'hi' ? hi : en;
 
-  // Initialize messages when language changes
   useEffect(() => {
     setMessages([getInitialMessage(language)]);
   }, [language]);
@@ -52,7 +36,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ language }) => {
     scrollToBottom();
   }, [messages]);
 
-  // Cleanup speech recognition and synthesis on unmount
   useEffect(() => {
     return () => {
       if (stopListeningRef.current) {
@@ -88,7 +71,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ language }) => {
 
       setMessages((prev) => [...prev, assistantMessage]);
       
-      // If text-to-speech is active, speak the response
       if (isSpeaking) {
         speakText(response, language);
       }
@@ -117,7 +99,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ language }) => {
       });
     } finally {
       setIsProcessing(false);
-      // Focus the input after sending
       setTimeout(() => {
         inputRef.current?.focus();
       }, 100);
@@ -133,14 +114,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ language }) => {
 
   const toggleSpeechRecognition = () => {
     if (isListening) {
-      // Stop listening
       if (stopListeningRef.current) {
         stopListeningRef.current();
         stopListeningRef.current = null;
       }
       setIsListening(false);
     } else {
-      // Start listening
       setIsListening(true);
       
       toast({
@@ -180,7 +159,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ language }) => {
         ),
       });
       
-      // Speak the last AI message if there is one
       const lastAiMessage = [...messages].reverse().find(m => m.role === 'assistant');
       if (lastAiMessage) {
         speakText(lastAiMessage.content, language);
@@ -197,7 +175,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ language }) => {
       ),
     });
     
-    // In a real app, this would use geolocation and connect to a hospital API
     setTimeout(() => {
       const newMessage: Message = {
         id: generateId(),
@@ -226,7 +203,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ language }) => {
       ),
     });
     
-    // In a real app, this would save to a database or local storage
     setTimeout(() => {
       const newMessage: Message = {
         id: generateId(),
@@ -246,6 +222,93 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ language }) => {
     }, 1000);
   };
 
+  const handleShareChat = () => {
+    if (messages.length <= 1) {
+      toast({
+        title: getText("कोई साझा करने योग्य बातचीत नहीं", "No conversation to share"),
+        description: getText(
+          "साझा करने के लिए पहले कुछ प्रश्न पूछें।",
+          "Ask some questions first to have a conversation to share."
+        ),
+      });
+      return;
+    }
+
+    const chatContent = messages
+      .map((msg) => `${msg.role === 'user' ? 'You' : 'Health Assistant'}: ${msg.content}`)
+      .join('\n\n');
+    
+    if (navigator.share) {
+      navigator.share({
+        title: getText("स्वास्थ्य सहायक बातचीत", "Health Assistant Conversation"),
+        text: chatContent,
+      }).catch(error => {
+        console.error('Error sharing:', error);
+        handleFallbackShare(chatContent);
+      });
+    } else {
+      handleFallbackShare(chatContent);
+    }
+  };
+
+  const handleFallbackShare = (content: string) => {
+    navigator.clipboard.writeText(content).then(() => {
+      toast({
+        title: getText("क्लिपबोर्ड पर कॉपी किया गया", "Copied to clipboard"),
+        description: getText(
+          "बातचीत क्लिपबोर्ड पर कॉपी की गई है। आप इसे कहीं भी पेस्ट कर सकते हैं।",
+          "Conversation copied to clipboard. You can paste it anywhere."
+        ),
+      });
+    }).catch(err => {
+      console.error('Could not copy text: ', err);
+      toast({
+        variant: "destructive",
+        title: getText("साझा करने में विफल", "Failed to share"),
+        description: getText(
+          "बातचीत साझा करने में समस्या आई है।",
+          "There was a problem sharing the conversation."
+        ),
+      });
+    });
+  };
+
+  const handleDownloadChat = () => {
+    if (messages.length <= 1) {
+      toast({
+        title: getText("कोई डाउनलोड करने योग्य बातचीत नहीं", "No conversation to download"),
+        description: getText(
+          "डाउनलोड करने के लिए पहले कुछ प्रश्न पूछें।",
+          "Ask some questions first to have a conversation to download."
+        ),
+      });
+      return;
+    }
+
+    const chatContent = messages
+      .map((msg) => `${msg.role === 'user' ? 'You' : 'Health Assistant'}: ${msg.content}`)
+      .join('\n\n');
+    
+    const blob = new Blob([chatContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const date = new Date().toISOString().split('T')[0];
+    a.href = url;
+    a.download = `health-assistant-chat-${date}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: getText("बातचीत डाउनलोड की गई", "Conversation downloaded"),
+      description: getText(
+        "बातचीत सफलतापूर्वक डाउनलोड की गई है।",
+        "The conversation has been successfully downloaded."
+      ),
+    });
+  };
+
   return (
     <section id="chat" className="relative py-20 px-4">
       <div className="container mx-auto max-w-5xl">
@@ -261,7 +324,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ language }) => {
         </div>
 
         <div className="relative mx-auto max-w-3xl">
-          {/* Background Blobs */}
           <AnimatedBlob 
             className="right-0 top-0 translate-x-1/2 -translate-y-1/2" 
             color="bg-health-100/50" 
@@ -271,9 +333,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ language }) => {
             color="bg-child-100/50" 
           />
 
-          {/* Chat Container */}
           <div className="relative glass rounded-2xl shadow-lg overflow-hidden border border-border">
-            {/* Chat Header */}
             <div className="bg-card/50 p-4 border-b border-border">
               <div className="flex items-center">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-r from-health-500 to-child-500 flex items-center justify-center text-white">
@@ -284,13 +344,48 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ language }) => {
                   <p className="text-xs text-foreground/60">RMNCHA {getText("सहायता", "Support")}</p>
                 </div>
                 <div className="ml-auto flex items-center gap-2">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          onClick={handleShareChat}
+                          size="icon" 
+                          variant="ghost"
+                          className="h-8 w-8"
+                        >
+                          <Share2 size={16} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{getText("बातचीत साझा करें", "Share conversation")}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          onClick={handleDownloadChat}
+                          size="icon" 
+                          variant="ghost"
+                          className="h-8 w-8"
+                        >
+                          <Download size={16} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{getText("बातचीत डाउनलोड करें", "Download conversation")}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  
                   <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse-soft ml-1"></span>
                   <span className="text-xs text-foreground/60">{getText("ऑनलाइन", "Online")}</span>
                 </div>
               </div>
             </div>
 
-            {/* Chat Messages */}
             <div className="p-4 h-[400px] overflow-y-auto">
               {messages.map((message) => (
                 <div
@@ -330,7 +425,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ language }) => {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Chat Input */}
             <div className="border-t border-border p-3">
               <div className="flex items-center gap-2">
                 <TooltipProvider>
@@ -423,7 +517,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ language }) => {
             </div>
           </div>
 
-          {/* Features */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
             <button 
               onClick={toggleTextToSpeech}
