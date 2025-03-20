@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Menu, X, Users, Globe } from "lucide-react";
 import AshaWorkersList from "./AshaWorkersList";
 import { useToast } from "@/components/ui/use-toast";
+import RegisterForm from "@/components/RegisterForm";
 import {
   Select,
   SelectContent,
@@ -20,6 +21,7 @@ const Header: React.FC<HeaderProps> = ({ language, setLanguage }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [ashaWorkersOpen, setAshaWorkersOpen] = useState(false);
+  const [registerFormOpen, setRegisterFormOpen] = useState(false);
   const { toast } = useToast();
 
   // Get text based on language
@@ -97,8 +99,11 @@ const Header: React.FC<HeaderProps> = ({ language, setLanguage }) => {
             </Select>
           </div>
           
-          <button className="btn-primary">
-            {getText("शुरू करें", "Get Started")}
+          <button 
+            className="btn-primary"
+            onClick={() => setRegisterFormOpen(true)}
+          >
+            {getText("गर्भावस्था पंजीकरण", "Register Pregnancy")}
           </button>
         </nav>
 
@@ -165,9 +170,12 @@ const Header: React.FC<HeaderProps> = ({ language, setLanguage }) => {
             
             <button 
               className="btn-primary w-full"
-              onClick={() => setIsMobileMenuOpen(false)}
+              onClick={() => {
+                setRegisterFormOpen(true);
+                setIsMobileMenuOpen(false);
+              }}
             >
-              {getText("शुरू करें", "Get Started")}
+              {getText("गर्भावस्था पंजीकरण", "Register Pregnancy")}
             </button>
           </nav>
         </div>
@@ -175,6 +183,9 @@ const Header: React.FC<HeaderProps> = ({ language, setLanguage }) => {
       
       {/* ASHA Workers List Modal */}
       <AshaWorkersList open={ashaWorkersOpen} onOpenChange={setAshaWorkersOpen} language={language} />
+      
+      {/* Register Pregnancy Form */}
+      <RegisterForm open={registerFormOpen} onOpenChange={setRegisterFormOpen} language={language} />
     </header>
   );
 };

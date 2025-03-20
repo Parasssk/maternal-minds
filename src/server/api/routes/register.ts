@@ -1,5 +1,5 @@
 
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { saveRegistration, getRegistrationById, getAllRegistrations } from '../services/registerService';
 
@@ -20,7 +20,7 @@ const validateRegistration = [
 ];
 
 // Create a new registration
-router.post('/', validateRegistration, async (req, res) => {
+router.post('/', validateRegistration, async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -47,7 +47,7 @@ router.post('/', validateRegistration, async (req, res) => {
 });
 
 // Get all registrations
-router.get('/', async (req, res) => {
+router.get('/', async (_req: Request, res: Response) => {
   try {
     const registrations = await getAllRegistrations();
     res.status(200).json({ success: true, data: registrations });
@@ -58,7 +58,7 @@ router.get('/', async (req, res) => {
 });
 
 // Get registration by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req: Request, res: Response) => {
   try {
     const registration = await getRegistrationById(req.params.id);
     if (!registration) {

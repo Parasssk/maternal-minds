@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,7 +24,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
 import {
@@ -41,6 +39,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { registerPregnancy } from "@/utils/api";
 
 // Schema for form validation
 const formSchema = z.object({
@@ -63,11 +62,12 @@ const formSchema = z.object({
 
 interface RegisterFormProps {
   language: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-const RegisterForm: React.FC<RegisterFormProps> = ({ language }) => {
+const RegisterForm: React.FC<RegisterFormProps> = ({ language, open, onOpenChange }) => {
   const { toast } = useToast();
-  const [open, setOpen] = React.useState(false);
   
   // Get text based on language
   const getText = (hi: string, en: string) => language === 'hi' ? hi : en;
@@ -87,35 +87,47 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ language }) => {
     },
   });
 
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
-    console.log("Form submitted:", data);
-    
-    // In a real application, this data would be sent to a backend service
-    toast({
-      title: getText("पंजीकरण सफल", "Registration Successful"),
-      description: getText(
-        "एक आशा कार्यकर्ता जल्द ही आपसे संपर्क करेगी। अपना ख्याल रखें!",
-        "An ASHA worker will contact you soon. Take care of yourself!"
-      ),
-    });
-    
-    // Close the dialog
-    setOpen(false);
-    
-    // Reset the form
-    form.reset();
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    try {
+      console.log("Form submitted:", data);
+      
+      // Convert the date to an ISO string for API
+      const formattedData = {
+        ...data,
+        conceiveDate: data.conceiveDate.toISOString(),
+      };
+      
+      // Send the data to the backend
+      await registerPregnancy(formattedData);
+      
+      toast({
+        title: getText("पंजीकरण सफल", "Registration Successful"),
+        description: getText(
+          "एक आशा कार्यकर्ता जल्द ही आपसे संपर्क करेगी। अपना ख्याल रखें!",
+          "An ASHA worker will contact you soon. Take care of yourself!"
+        ),
+      });
+      
+      // Close the dialog
+      onOpenChange(false);
+      
+      // Reset the form
+      form.reset();
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast({
+        title: getText("पंजीकरण विफल", "Registration Failed"),
+        description: getText(
+          "पंजीकरण के दौरान एक त्रुटि हुई। कृपया बाद में पुन: प्रयास करें।",
+          "An error occurred during registration. Please try again later."
+        ),
+        variant: "destructive",
+      });
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button 
-          className="btn-health"
-          size="lg"
-        >
-          {getText("गर्भावस्था पंजीकरण", "Register Pregnancy")}
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl">
