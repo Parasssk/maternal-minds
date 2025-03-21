@@ -1,4 +1,3 @@
-
 import express, { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { saveRegistration, getRegistrationById, getAllRegistrations } from '../services/registerService';
@@ -16,17 +15,17 @@ const validateRegistration = [
   body('state').isString().isLength({ min: 2 }).withMessage('State must be at least 2 characters'),
   body('conceiveDate').isISO8601().withMessage('Conception date must be a valid date'),
   body('additionalInfo').optional(),
-  body('preferredLanguage').isString()
+  body('preferredLanguage').isString().withMessage('Preferred Language must be a valid string')
 ];
 
 // Create a new registration
 router.post('/', validateRegistration, async (req: Request, res: Response) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
 
+  try {
     const registration = await saveRegistration(req.body);
     return res.status(201).json({ 
       success: true, 
@@ -72,3 +71,4 @@ router.get('/:id', async (req: Request, res: Response) => {
 });
 
 export { router as registerRouter };
+
