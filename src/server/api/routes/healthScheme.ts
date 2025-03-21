@@ -1,12 +1,12 @@
 
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { query } from 'express-validator';
 import { getAllHealthSchemes, getHealthSchemesByCategory, getHealthSchemeById } from '../services/healthSchemeService';
 
 const router = express.Router();
 
 // Get all health schemes
-router.get('/', async (req, res) => {
+router.get('/', async (_req: Request, res: Response) => {
   try {
     const healthSchemes = await getAllHealthSchemes();
     res.status(200).json({ success: true, data: healthSchemes });
@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {
 // Get health schemes by category
 router.get('/category', [
   query('category').isString()
-], async (req, res) => {
+], async (req: Request, res: Response) => {
   try {
     const category = req.query.category as string;
     const healthSchemes = await getHealthSchemesByCategory(category);
@@ -31,7 +31,7 @@ router.get('/category', [
 });
 
 // Get health scheme by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req: Request, res: Response) => {
   try {
     const healthScheme = await getHealthSchemeById(req.params.id);
     if (!healthScheme) {
