@@ -1,3 +1,4 @@
+
 import express, { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { saveRegistration, getRegistrationById, getAllRegistrations } from '../services/registerService';
@@ -27,7 +28,7 @@ router.post('/', validateRegistration, async (req: Request, res: Response) => {
 
   try {
     const registration = await saveRegistration(req.body);
-    return res.status(201).json({ 
+    res.status(201).json({ 
       success: true, 
       message: req.body.preferredLanguage === 'Hindi' ? 
         'पंजीकरण सफलतापूर्वक पूरा हुआ' : 
@@ -36,7 +37,7 @@ router.post('/', validateRegistration, async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Error registering pregnancy:', error);
-    return res.status(500).json({ 
+    res.status(500).json({ 
       success: false, 
       message: req.body.preferredLanguage === 'Hindi' ? 
         'पंजीकरण के दौरान एक त्रुटि हुई' : 
@@ -49,10 +50,10 @@ router.post('/', validateRegistration, async (req: Request, res: Response) => {
 router.get('/', async (_req: Request, res: Response) => {
   try {
     const registrations = await getAllRegistrations();
-    return res.status(200).json({ success: true, data: registrations });
+    res.status(200).json({ success: true, data: registrations });
   } catch (error) {
     console.error('Error fetching registrations:', error);
-    return res.status(500).json({ success: false, message: 'Failed to fetch registrations' });
+    res.status(500).json({ success: false, message: 'Failed to fetch registrations' });
   }
 });
 
@@ -63,12 +64,11 @@ router.get('/:id', async (req: Request, res: Response) => {
     if (!registration) {
       return res.status(404).json({ success: false, message: 'Registration not found' });
     }
-    return res.status(200).json({ success: true, data: registration });
+    res.status(200).json({ success: true, data: registration });
   } catch (error) {
     console.error('Error fetching registration:', error);
-    return res.status(500).json({ success: false, message: 'Failed to fetch registration' });
+    res.status(500).json({ success: false, message: 'Failed to fetch registration' });
   }
 });
 
 export { router as registerRouter };
-
