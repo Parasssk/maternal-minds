@@ -1,3 +1,4 @@
+
 import express, { Request, Response } from 'express';
 import { query, validationResult } from 'express-validator';
 import { getAllHealthSchemes, getHealthSchemesByCategory, getHealthSchemeById } from '../services/healthSchemeService';
@@ -50,4 +51,3 @@ router.get('/:id', async (req: Request, res: Response) => {
 });
 
 export { router as healthSchemeRouter };
-
