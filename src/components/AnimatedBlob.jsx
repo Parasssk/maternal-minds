@@ -1,12 +1,6 @@
-
 import React from "react";
 
-interface AnimatedBlobProps {
-  className?: string;
-  color?: string;
-}
-
-const AnimatedBlob: React.FC<AnimatedBlobProps> = ({ 
+const AnimatedBlob = ({ 
   className = "", 
   color = "bg-primary/10" 
 }) => {

@@ -1,9 +1,8 @@
-
 import React from "react";
 import { ArrowDown } from "lucide-react";
 import AnimatedBlob from "./AnimatedBlob";
 
-const Hero: React.FC = () => {
+const Hero = () => {
   const scrollToChat = () => {
     const chatSection = document.getElementById("chat");
     chatSection?.scrollIntoView({ behavior: "smooth" });
@@ -41,7 +40,7 @@ const Hero: React.FC = () => {
         </div>
 
         <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-health-800 via-mother-700 to-child-800 animate-blur-in">
-          Your Maternal &amp; Child Health Companion
+          Your Maternal & Child Health Companion
         </h1>
 
         <p className="text-lg md:text-xl text-foreground/80 mb-8 max-w-2xl mx-auto animate-slide-up">
