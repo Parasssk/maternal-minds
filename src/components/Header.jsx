@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, Globe, Users } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
 
 const Header = ({ language, setLanguage }) => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -32,13 +33,8 @@ const Header = ({ language, setLanguage }) => {
     setLanguage(newLanguage);
   };
 
-  const scrollToSection = (sectionId) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-    setIsMobileMenuOpen(false);
-  };
+  // Routing now handles navigation; smooth scrolling removed
+
 
   return (
     <>
@@ -60,24 +56,15 @@ const Header = ({ language, setLanguage }) => {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-8">
-              <button 
-                onClick={() => scrollToSection('hero')}
-                className="text-foreground hover:text-primary transition-colors"
-              >
+              <NavLink to="/" className="text-foreground hover:text-primary transition-colors">
                 {getText('home')}
-              </button>
-              <button 
-                onClick={() => scrollToSection('chat')}
-                className="text-foreground hover:text-primary transition-colors"
-              >
+              </NavLink>
+              <NavLink to="/chat" className="text-foreground hover:text-primary transition-colors">
                 {getText('chat')}
-              </button>
-              <button 
-                onClick={() => scrollToSection('schemes')}
-                className="text-foreground hover:text-primary transition-colors"
-              >
+              </NavLink>
+              <NavLink to="/schemes" className="text-foreground hover:text-primary transition-colors">
                 {getText('schemes')}
-              </button>
+              </NavLink>
             </nav>
 
             {/* Desktop Actions */}
@@ -124,24 +111,27 @@ const Header = ({ language, setLanguage }) => {
         {isMobileMenuOpen && (
           <div className="md:hidden bg-background border-t">
             <div className="container mx-auto px-4 py-4 space-y-4">
-              <button 
-                onClick={() => scrollToSection('hero')}
+              <NavLink 
+                to="/"
+                onClick={() => setIsMobileMenuOpen(false)}
                 className="block w-full text-left py-2 text-foreground hover:text-primary transition-colors"
               >
                 {getText('home')}
-              </button>
-              <button 
-                onClick={() => scrollToSection('chat')}
+              </NavLink>
+              <NavLink 
+                to="/chat"
+                onClick={() => setIsMobileMenuOpen(false)}
                 className="block w-full text-left py-2 text-foreground hover:text-primary transition-colors"
               >
                 {getText('chat')}
-              </button>
-              <button 
-                onClick={() => scrollToSection('schemes')}
+              </NavLink>
+              <NavLink 
+                to="/schemes"
+                onClick={() => setIsMobileMenuOpen(false)}
                 className="block w-full text-left py-2 text-foreground hover:text-primary transition-colors"
               >
                 {getText('schemes')}
-              </button>
+              </NavLink>
               
               <div className="pt-4 border-t space-y-3">
                 <button

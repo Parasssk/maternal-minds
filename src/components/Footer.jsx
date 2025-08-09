@@ -1,5 +1,6 @@
 import React from 'react';
 import { Heart, Facebook, Twitter, Instagram, Mail, Phone, MapPin } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
@@ -28,9 +29,9 @@ const Footer = () => {
           <div>
             <h3 className="font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2 text-sm">
-              <li><a href="#hero" className="text-muted-foreground hover:text-primary transition-colors">Home</a></li>
-              <li><a href="#chat" className="text-muted-foreground hover:text-primary transition-colors">Chat Assistant</a></li>
-              <li><a href="#schemes" className="text-muted-foreground hover:text-primary transition-colors">Health Schemes</a></li>
+              <li><Link to="/" className="text-muted-foreground hover:text-primary transition-colors">Home</Link></li>
+              <li><Link to="/chat" className="text-muted-foreground hover:text-primary transition-colors">Chat Assistant</Link></li>
+              <li><Link to="/schemes" className="text-muted-foreground hover:text-primary transition-colors">Health Schemes</Link></li>
               <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">ASHA Workers</a></li>
             </ul>
           </div>
