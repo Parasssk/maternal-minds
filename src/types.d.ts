@@ -1,5 +1,5 @@
-// Minimal TS declaration to satisfy tsconfig.app.json include
-// You can extend this as needed.
+// Minimal declaration file so tsconfig.app.json has an input
+// Does not affect runtime; safe to keep
 declare module "*.svg" {
   const src: string;
   export default src;

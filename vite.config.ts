@@ -1,4 +1,4 @@
 // @ts-nocheck
-// This shim satisfies tsconfig.node.json while delegating to the JS config
+// Required only to satisfy read-only tsconfig.node.json include
 import config from "./vite.config.js";
 export default config;
